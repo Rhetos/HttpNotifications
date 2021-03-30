@@ -366,3 +366,4 @@ FodyWeavers.xsd
 *.local.json
 Logs/
 /TestApp/Resources/
+/test/TestApp/DslScripts/Rhetos.HttpNotifications/

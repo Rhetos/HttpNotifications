@@ -11,7 +11,7 @@ namespace Rhetos.Events
     public interface IEventProcessing
     {
         /// <summary>
-        /// Emitting an event allows various event handlers to process them (for example, HTTP notifications to external system).
+        /// Emitting an event allows various event handlers to process them (for example, HTTP notifications to an external system).
         /// </summary>
         /// <remarks>
         /// There is no need to use event processing and the <see cref="EmitEvent"/> method for a specific event that is intended for a single specific event handler.

@@ -1,3 +1,7 @@
+# Rhetos.Events
+
+Naming convention: event should be named in passive form, since it represents something that happened, for example "Bookstore_Book_Inserted".
+
 # Rhetos.HttpNotifications
 
 ## Using Rhetos.HttpNotifications

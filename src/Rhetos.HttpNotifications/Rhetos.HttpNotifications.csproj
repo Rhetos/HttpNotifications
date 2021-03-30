@@ -45,6 +45,7 @@
     <Compile Include="HttpNotificationsDispatcher.cs" />
     <Compile Include="HttpNotificationsOptions.cs" />
     <Compile Include="IHttpNotificationsSubscription.cs" />
+    <Compile Include="ISendHttpNotification.cs" />
     <Compile Include="ISubscriptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Subscriptions.cs" />

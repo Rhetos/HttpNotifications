@@ -20,8 +20,7 @@ namespace Rhetos.Events
     //    Bookstore_Book_InsertedImportantBook
     //}
 
-    // TODO: Can this be singletone? No.
-
+    // TODO: Can this be singleton? No.
 
     public class EventProcessing : IEventProcessing // TODO: IBroker  IEventBus  IChannel
     {
@@ -29,6 +28,7 @@ namespace Rhetos.Events
         /*fields*/
 
         public EventProcessing(
+            // Note for extensions: Use Lazy dependencies for event-specific handlers.
             Rhetos.HttpNotifications.HttpNotificationsDispatcher httpNotificationsDispatcher
             /*constructor*/)
         {

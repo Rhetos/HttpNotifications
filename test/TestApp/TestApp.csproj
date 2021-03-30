@@ -89,9 +89,7 @@
     <Content Include="rhetos-build.settings.json" />
     <Content Include="rhetos-app.local.settings.json" />
     <Content Include="DslScripts\Books.rhe" />
-    <Content Include="..\..\src\Rhetos.HttpNotifications\DslScripts\HttpNotifications.rhe">
-      <Link>DslScripts\HttpNotifications.rhe</Link>
-    </Content>
+    <Content Include="DslScripts\Rhetos.HttpNotifications\HttpNotifications.rhe" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -151,6 +149,11 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PreBuildEvent>robocopy "$(ProjectDir)..\..\src\Rhetos.HttpNotifications\DslScripts" "$(ProjectDir)DslScripts\Rhetos.HttpNotifications" /MIR /NP /NJH /NJS /NDL || call rem
+@rem "call rem" clears robocopy exit codes to avoid issues with msbuild.
+</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

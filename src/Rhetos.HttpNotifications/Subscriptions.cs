@@ -18,7 +18,8 @@ namespace Rhetos.HttpNotifications
         {
             // TODO: Cache.
 
-            return _subscriptionRepository.Query(s => s.EventType == eventType).ToList();
+            return ((IQueryableRepository<IHttpNotificationsSubscription, IHttpNotificationsSubscription>)_subscriptionRepository)
+                .Load(s => s.EventType == eventType);
         }
     }
 }
