@@ -4,17 +4,25 @@ Naming convention: event should be named in passive form, since it represents so
 
 # Rhetos.HttpNotifications
 
-## Using Rhetos.HttpNotifications
-
-### Installation and configuration
+## Installation and configuration
 
 `<add key="owin:AutomaticAppStartup" value="false"/>`
 
 Add an implementations of Rhetos background job processing, for example *Rhetos.Jobs.Hangfire* NuGet package.
 
-###  Features
+## Features
 
 ...
+
+
+* In case there are multiple identical notifications generated within a single unit-of-work scope (single web request), only the last one of them will be sent.
+
+## Limitations
+
+* In-order delivery of the notifications is not guaranteed.
+* In rare cases, the same HTTP notification can be sent more then once.
+  * The NotificationId property in the request body will be the same in case of repeated notification.
+  * This issue is possible due to limitations of underlying task management subsystem. For example, in case of a database connection issue, the notification task could fail to update it's status to 'successful' after sending the HTTP notification.
 
 ## Contributing to Rhetos.HttpNotifications
 

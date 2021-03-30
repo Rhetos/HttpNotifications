@@ -14,8 +14,8 @@
         SaveMethod
         {
             AfterSave EmitCrudEvents
-                '{
-                    // DSL concept: EmitsCrudEvents => macro: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
+                '
+                    // DSL concept: EmitsCrudEvents => macro: Event Bookstore_Book_InsertedAny IEnumerable<Guid>, SaveMethod AfterSave.
 
                     if (deletedIds.Any())
                         _eventProcessing.EmitEvent("Bookstore_Book_Deleted", deletedIds.Select(item => item.ID));
@@ -25,7 +25,10 @@
 
                     if (insertedNew.Any())
                         _eventProcessing.EmitEvent("Bookstore_Book_Inserted", insertedNew.Select(item => item.ID));
+                ';
 
+            AfterSave EmitAdditionalCustomEvents
+                '
                     // Custom event example: Only one event per web request.
                     // DSL concepts: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
 
@@ -36,11 +39,11 @@
 
                     if (insertedNew.Any())
                     {
-                        var notifyForItems = insertedNew.Where(book => book.Title?.Contains("important")).Select(item => new { item.ID, item.Title }).ToList();
+                        var notifyForItems = insertedNew.Where(book => book.Title?.Contains("important") == true).Select(item => new { item.ID, item.Title }).ToList();
                         if (notifyForItems.Any())
                             _eventProcessing.EmitEvent("Bookstore_Book_InsertedImportantBook", notifyForItems);
                     }
-                }';
+                ';
 
             // EmitsCrudEvents => macro: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
 

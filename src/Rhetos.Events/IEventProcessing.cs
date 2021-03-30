@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 namespace Rhetos.Events
 {
@@ -19,5 +19,7 @@ namespace Rhetos.Events
         /// or to allow implementation of an event handler that has no information on which component emits the event.
         /// </remarks>
         void EmitEvent(string eventType, object eventData);
+
+        IEnumerable<string> GetEventTypes();
     }
 }

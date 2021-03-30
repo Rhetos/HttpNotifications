@@ -20,9 +20,13 @@ namespace Rhetos.Events
     //    Bookstore_Book_InsertedImportantBook
     //}
 
-    // TODO: Can this be singleton? No.
+    public static class EventName
+    {
+        public const string Bookstore_Book_Deleted = "Bookstore_Book_Deleted";
+        /*eventtype*/
+    }
 
-    public class EventProcessing : IEventProcessing // TODO: IBroker  IEventBus  IChannel
+    public class EventProcessing : IEventProcessing
     {
         private readonly Rhetos.HttpNotifications.HttpNotificationsDispatcher _httpNotificationsDispatcher;
         /*fields*/
@@ -35,8 +39,28 @@ namespace Rhetos.Events
             _httpNotificationsDispatcher = httpNotificationsDispatcher;
         }
 
+        private static readonly Dictionary<string, Type> _eventTypes = new (string EventType, Type EventDataType)[]
+        {
+            ("Bookstore_Book_Deleted", typeof(IEnumerable<Guid>)),
+            ("Bookstore_Book_Updated", typeof(IEnumerable<Guid>)),
+            ("Bookstore_Book_Inserted", typeof(IEnumerable<Guid>)),
+            ("Bookstore_Book_InsertedAny", typeof(object)),
+            ("Bookstore_Book_InsertedImportantBook", typeof(object)),
+            /*eventtype*/
+        }.ToDictionary(e => e.EventType, e => e.EventDataType, StringComparer.Ordinal);
+
+        public IEnumerable<string> GetEventTypes() => _eventTypes.Keys;
+
         public void EmitEvent(string eventType, object eventData)
         {
+            if (_eventTypes.TryGetValue(eventType, out Type eventDataType))
+            {
+                if (eventData != null && !eventDataType.IsInstanceOfType(eventData))
+                    throw new ArgumentException($"Invalid data type provided for event '{eventType}'. Expected '{eventDataType}', provided '{eventData.GetType()}'.");
+            }
+            else
+                throw new ArgumentException($"Cannot emit event type '{eventType}' because it is not registered.");
+
             // Cancel or override events:
             /*Before event handled*/
 
@@ -44,7 +68,7 @@ namespace Rhetos.Events
             // Specific event handlers by event type:
             switch (eventType)
             {
-                // TODO: One specific event cases could be created by a DSL concept, so that this switch will have only the ones that are used.
+                // TODO: Specific event cases could be created by a DSL concept, so that this switch will have only the cases that are used.
                 case "Bookstore_Book_Deleted":
                     /*Event type handler Bookstore_Book_Deleted*/
                     break;
