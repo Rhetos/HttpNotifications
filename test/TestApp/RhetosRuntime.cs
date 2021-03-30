@@ -90,7 +90,6 @@ namespace Rhetos
             registerCustomComponents?.Invoke(builder);
 
             // Custom TestApp components:
-            builder.RegisterType<Bookstore.BookHelper>().InstancePerLifetimeScope();
             // TODO: This registration should be made by Rhetos.Events in the generated code:
             builder.RegisterType<EventProcessing>().As<IEventProcessing>().InstancePerLifetimeScope();
 

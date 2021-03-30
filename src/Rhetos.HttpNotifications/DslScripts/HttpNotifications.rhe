@@ -19,7 +19,7 @@ Module RhetosHttpNotifications
 		LongString Url;
 		LongString Payload;
 
-		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider';
+		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
 
 		Implements 'Rhetos.HttpNotifications.ISendHttpNotification, Rhetos.HttpNotifications';
 	}

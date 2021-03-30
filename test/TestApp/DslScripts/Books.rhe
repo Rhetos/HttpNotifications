@@ -13,7 +13,34 @@
 
         SaveMethod
         {
-            AfterSave EmitCrudEvents '_bookHelper.EmitCrudEvents(insertedNew, updatedNew, deletedIds);';
+            AfterSave EmitCrudEvents
+                '{
+                    // DSL concept: EmitsCrudEvents => macro: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
+
+                    if (deletedIds.Any())
+                        _eventProcessing.EmitEvent("Bookstore_Book_Deleted", deletedIds.Select(item => item.ID));
+
+                    if (updatedNew.Any())
+                        _eventProcessing.EmitEvent("Bookstore_Book_Updated", updatedNew.Select(item => item.ID));
+
+                    if (insertedNew.Any())
+                        _eventProcessing.EmitEvent("Bookstore_Book_Inserted", insertedNew.Select(item => item.ID));
+
+                    // Custom event example: Only one event per web request.
+                    // DSL concepts: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
+
+                    if (insertedNew.Any())
+                        _eventProcessing.EmitEvent("Bookstore_Book_InsertedAny", (object)null);
+
+                    // Custom event example: "Important" books inserted.
+
+                    if (insertedNew.Any())
+                    {
+                        var notifyForItems = insertedNew.Where(book => book.Title?.Contains("important")).Select(item => new { item.ID, item.Title }).ToList();
+                        if (notifyForItems.Any())
+                            _eventProcessing.EmitEvent("Bookstore_Book_InsertedImportantBook", notifyForItems);
+                    }
+                }';
 
             // EmitsCrudEvents => macro: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
 
@@ -27,6 +54,6 @@
             // specify a new event type, not a new HttpNotification.
         }
 
-        RepositoryUses '_bookHelper' 'Bookstore.BookHelper';
+        RepositoryUses _eventProcessing 'Rhetos.Events.IEventProcessing, Rhetos.Events';
     }
 }
