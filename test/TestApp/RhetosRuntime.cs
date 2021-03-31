@@ -89,10 +89,6 @@ namespace Rhetos
 
             registerCustomComponents?.Invoke(builder);
 
-            // Custom TestApp components:
-            // TODO: This registration should be made by Rhetos.Events in the generated code:
-            builder.RegisterType<EventProcessing>().As<IEventProcessing>().InstancePerLifetimeScope();
-
             return builder.Build();
         }
     }

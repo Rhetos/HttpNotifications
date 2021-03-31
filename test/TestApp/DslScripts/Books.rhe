@@ -11,52 +11,37 @@
 
         Logging { AllProperties; }
 
+        EmitsCrudEvents;
+
         SaveMethod
         {
-            AfterSave EmitCrudEvents
-                '
-                    // DSL concept: EmitsCrudEvents => macro: Event Bookstore_Book_InsertedAny IEnumerable<Guid>, SaveMethod AfterSave.
-
-                    if (deletedIds.Any())
-                        _eventProcessing.EmitEvent("Bookstore_Book_Deleted", deletedIds.Select(item => item.ID));
-
-                    if (updatedNew.Any())
-                        _eventProcessing.EmitEvent("Bookstore_Book_Updated", updatedNew.Select(item => item.ID));
-
-                    if (insertedNew.Any())
-                        _eventProcessing.EmitEvent("Bookstore_Book_Inserted", insertedNew.Select(item => item.ID));
-                ';
-
             AfterSave EmitAdditionalCustomEvents
-                '
-                    // Custom event example: Only one event per web request.
-                    // DSL concepts: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
+            '
+                // Custom event example: "Important" books inserted. Event includes data: Book ID and Title.
 
-                    if (insertedNew.Any())
-                        _eventProcessing.EmitEvent("Bookstore_Book_InsertedAny", (object)null);
+                if (insertedNew.Any())
+                {
+                    var notifyForItems = insertedNew.Where(book => book.Title?.Contains("important") == true).Select(item => new { item.ID, item.Title }).ToList();
+                    if (notifyForItems.Any())
+                        _eventProcessing.EmitEvent(Rhetos.Events.EventName.Bookstore_Book_InsertedImportantBook, notifyForItems);
+                }
 
-                    // Custom event example: "Important" books inserted.
+                // Custom event example: Single event for any number of new books within a web request.
+                // HttpNotifications are by default optimized to aggregate same notifications per web request.
 
-                    if (insertedNew.Any())
-                    {
-                        var notifyForItems = insertedNew.Where(book => book.Title?.Contains("important") == true).Select(item => new { item.ID, item.Title }).ToList();
-                        if (notifyForItems.Any())
-                            _eventProcessing.EmitEvent("Bookstore_Book_InsertedImportantBook", notifyForItems);
-                    }
-                ';
+                if (insertedNew.Any())
+                    _eventProcessing.EmitEvent(Rhetos.Events.EventName.Bookstore_Book_InsertedAny);
 
-            // EmitsCrudEvents => macro: BusinessEventType Bookstore_Book_InsertedAny, SaveMethod AfterSave.
-
-            // BusinessEventType Bookstore_Book_InsertedAny
-            // SaveMethod AfterSave.
-
-            // HttpNotificationsForCrudEvents;
-            // Instead of handling events, we might directly call HttpNotifications here.
-            // Downside is that app developer will need to make many changes it there is a need for a different implementation of notifications instead of HttpNotifications.
-            // Also, custom HttpNotifications will mostly contain code that registers custom event types, which is a code small that hint that user actually wants to
-            // specify a new event type, not a new HttpNotification.
+                // Instead of handling events, we might directly call HttpNotificationsDispatcher from SaveMethod or Action, providing custom event name and data.
+                // Current design approach, with the events layer between repositories and HttpNotifications, helps in long-term application maintenance.
+                // For example it allows changing or adding multiple generic event handlers, configurable by event type,
+                // without modifying the existing code that emits custom events in many places in the application.
+            ';
         }
 
-        RepositoryUses _eventProcessing 'Rhetos.Events.IEventProcessing, Rhetos.Events';
+        RepositoryUses _eventProcessing 'Rhetos.Events.IEventProcessing, Rhetos.Events'; // Required to emit custom events.
     }
 }
+
+Event Bookstore_Book_InsertedAny;
+Event Bookstore_Book_InsertedImportantBook;

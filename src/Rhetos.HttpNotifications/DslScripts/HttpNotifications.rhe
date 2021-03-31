@@ -2,8 +2,6 @@
 
 Module RhetosHttpNotifications
 {
-	// Hardcoded EventType; NO NEED? We can implement GetEventTypes web methods that returns all enum elements as strings.
-
 	Entity Subscription
 	{
 		ShortString EventType { Required; SqlIndex { Clustered; } }

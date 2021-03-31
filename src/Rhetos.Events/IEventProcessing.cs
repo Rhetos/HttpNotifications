@@ -18,8 +18,16 @@ namespace Rhetos.Events
         /// The emitted events are expected to be handled by generic event handlers (for example, a handler that manages run-time event subscriptions),
         /// or to allow implementation of an event handler that has no information on which component emits the event.
         /// </remarks>
-        void EmitEvent(string eventType, object eventData);
+        void EmitEvent(string eventName, object eventData);
 
-        IEnumerable<string> GetEventTypes();
+        /// <summary>
+        /// Returns names of all event types specified in the application.
+        /// </summary>
+        IEnumerable<string> GetEventNames();
+    }
+
+    public static class EventProcessingExtensions
+    {
+        public static void EmitEvent(this IEventProcessing eventProcessing, string eventName) => eventProcessing.EmitEvent(eventName, null);
     }
 }
