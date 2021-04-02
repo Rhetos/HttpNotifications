@@ -42,9 +42,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutofacModuleConfiguration.cs" />
+    <Compile Include="HttpNotification.cs" />
+    <Compile Include="Executers\HttpNotificationDatabaseLogger.cs" />
     <Compile Include="HttpNotificationsCodeGenerator.cs" />
+    <Compile Include="Executers\HttpNotificationSender.cs" />
     <Compile Include="HttpNotificationsDispatcher.cs" />
     <Compile Include="HttpNotificationsOptions.cs" />
+    <Compile Include="Executers\HttpNotificationSystemLogger.cs" />
+    <Compile Include="Executers\IHttpNotificationSender.cs" />
     <Compile Include="IHttpNotificationsSubscription.cs" />
     <Compile Include="ISendHttpNotification.cs" />
     <Compile Include="ISubscriptions.cs" />

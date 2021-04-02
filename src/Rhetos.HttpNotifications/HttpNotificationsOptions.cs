@@ -14,5 +14,26 @@
         /// Note that this option can also be configured per scope (per web request) in <see cref="HttpNotificationsDispatcher"/> class.
         /// </summary>
         public string[] SuppressEventTypes { get; set; }
+
+        /// <summary>
+        /// Override sending HTTP notifications in test environment by writing them to database or system log instead.
+        /// </summary>
+        public SendNotificationsMethod SendNotifications { get; set; } = SendNotificationsMethod.Http;
     }
+
+    public enum SendNotificationsMethod
+    {
+        /// <summary>
+        /// Sends HTTP POST request.
+        /// </summary>
+        Http,
+        /// <summary>
+        /// Writes notifications to database log (Common.Log table).
+        /// </summary>
+        DatabaseLog,
+        /// <summary>
+        /// Logs notifications to system log (<see cref="ILogProvider"/>).
+        /// </summary>
+        SystemLog,
+    };
 }

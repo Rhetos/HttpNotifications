@@ -16,27 +16,27 @@
         SaveMethod
         {
             AfterSave EmitAdditionalCustomEvents
-            '
-                // Custom event example: "Important" books inserted. Event includes data: Book ID and Title.
+                '
+                    // Custom event example: "Important" books inserted. Event includes data: Book ID and Title.
 
-                if (insertedNew.Any())
-                {
-                    var notifyForItems = insertedNew.Where(book => book.Title?.Contains("important") == true).Select(item => new { item.ID, item.Title }).ToList();
-                    if (notifyForItems.Any())
-                        _eventProcessing.EmitEvent(Rhetos.Events.EventName.Bookstore_Book_InsertedImportantBook, notifyForItems);
-                }
+                    if (insertedNew.Any())
+                    {
+                        var notifyForItems = insertedNew.Where(book => book.Title?.Contains("important") == true).Select(item => new { item.ID, item.Title }).ToList();
+                        if (notifyForItems.Any())
+                            _eventProcessing.EmitEvent(Rhetos.Events.EventName.Bookstore_Book_InsertedImportantBook, notifyForItems);
+                    }
 
-                // Custom event example: Single event for any number of new books within a web request.
-                // HttpNotifications are by default optimized to aggregate same notifications per web request.
+                    // Custom event example: Single event for any number of new books within a web request.
+                    // HttpNotifications are by default optimized to aggregate same notifications per web request.
 
-                if (insertedNew.Any())
-                    _eventProcessing.EmitEvent(Rhetos.Events.EventName.Bookstore_Book_InsertedAny);
+                    if (insertedNew.Any())
+                        _eventProcessing.EmitEvent(Rhetos.Events.EventName.Bookstore_Book_InsertedAny, null);
 
-                // Instead of handling events, we might directly call HttpNotificationsDispatcher from SaveMethod or Action, providing custom event name and data.
-                // Current design approach, with the events layer between repositories and HttpNotifications, helps in long-term application maintenance.
-                // For example it allows changing or adding multiple generic event handlers, configurable by event type,
-                // without modifying the existing code that emits custom events in many places in the application.
-            ';
+                    // Instead of handling events, we might directly call HttpNotificationsDispatcher from SaveMethod or Action, providing custom event name and data.
+                    // Current design approach, with the events layer between repositories and HttpNotifications, helps in long-term application maintenance.
+                    // For example it allows changing or adding multiple generic event handlers, configurable by event type,
+                    // without modifying the existing code that emits custom events in many places in the application.
+                ';
         }
 
         RepositoryUses _eventProcessing 'Rhetos.Events.IEventProcessing, Rhetos.Events'; // Required to emit custom events.

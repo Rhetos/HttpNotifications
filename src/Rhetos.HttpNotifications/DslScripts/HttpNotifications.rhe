@@ -11,14 +11,15 @@ Module RhetosHttpNotifications
 		Implements 'Rhetos.HttpNotifications.IHttpNotificationsSubscription, Rhetos.HttpNotifications' { RegisteredImplementation; }
 	}
 
-	Action SendHttpNotification '(parameter, repository, userInfo)
-		=> _logProvider.GetLogger("SendHttpNotification").Write(Rhetos.Logging.EventType.Info, () => $"URL: {parameter.Url}, Payload: {parameter.Payload}")'
+	// TODO: Remove this action after refactoring Rhetos.Jobs to support any job executer instead of DSL Actions only,
+	// and use IHttpNotificationSender directly instead.
+	Action SendHttpNotification '(parameter, repository, userInfo) => _httpNotificationSender.Post(parameter.Url, parameter.Payload)'
 	{
 		LongString Url;
 		LongString Payload;
 
-		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
-
 		Implements 'Rhetos.HttpNotifications.ISendHttpNotification, Rhetos.HttpNotifications';
+
+		RepositoryUses '_httpNotificationSender' 'Rhetos.HttpNotifications.IHttpNotificationSender, Rhetos.HttpNotifications';
 	}
 }

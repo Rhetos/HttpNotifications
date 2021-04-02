@@ -9,19 +9,26 @@ namespace Rhetos.HttpNotifications
 {
 
     /// <summary>
-    /// Event handler / task generator.
+    /// Event handler. Generates tasks based on subscriptions.
     /// </summary>
     public class HttpNotificationsDispatcher
     {
         private readonly IBackgroundJob _backgroundJob;
         private readonly ISubscriptions _subscriptions;
         private readonly IDomainObjectModel _domainObjectModel;
+        private readonly IHttpNotificationSender _httpNotificationSender;
 
-        public HttpNotificationsDispatcher(IBackgroundJob backgroundJob, ISubscriptions subscriptions, HttpNotificationsOptions options, IDomainObjectModel domainObjectModel)
+        public HttpNotificationsDispatcher(
+            IBackgroundJob backgroundJob,
+            ISubscriptions subscriptions,
+            HttpNotificationsOptions options,
+            IDomainObjectModel domainObjectModel,
+            IHttpNotificationSender httpNotificationSender)
         {
             _backgroundJob = backgroundJob;
             _subscriptions = subscriptions;
             _domainObjectModel = domainObjectModel;
+            _httpNotificationSender = httpNotificationSender;
             SuppressAll = options.SuppressAll;
             SuppressEventTypes = options.SuppressEventTypes?.ToHashSet(StringComparer.Ordinal); // Making copy to avoid modifying the global setting when modifying this instance.
         }
@@ -46,19 +53,16 @@ namespace Rhetos.HttpNotifications
             var eventSubscriptions = _subscriptions.GetSubscriptions(eventType);
             if (eventSubscriptions.Any())
             {
-                Guid notificationId = Guid.NewGuid();
-                var payload = new { EventType = eventType, NotificationId = notificationId, Data = eventData };
-                string payloadJson = JsonConvert.SerializeObject(payload);
+                var notification = new HttpNotification { EventType = eventType, NotificationId = Guid.NewGuid(), Data = eventData };
+                var payload = _httpNotificationSender.PrepareContent(notification);
 
                 foreach (var subscription in eventSubscriptions)
                 {
                     // TODO: EnqueueAction is difficult to use from a plugin packages, since we need to reference Action type from the generated app that does not exist here.
-
                     // TODO: Remove this after refactoring Rhetos.Jobs to support any job executer instead of DSL Actions only.
                     var sendNotificationsJob = (ISendHttpNotification)Activator.CreateInstance(_domainObjectModel.GetType("RhetosHttpNotifications.SendHttpNotification"));
                     sendNotificationsJob.Url = subscription.CallbackUrl;
-                    sendNotificationsJob.Payload = payloadJson;
-
+                    sendNotificationsJob.Payload = (string)payload;
                     _backgroundJob.EnqueueAction(sendNotificationsJob, executeInUserContext: false, optimizeDuplicates: true);
                 }
             }

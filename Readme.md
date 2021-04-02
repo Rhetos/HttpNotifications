@@ -24,6 +24,21 @@ Add an implementations of Rhetos background job processing, for example *Rhetos.
   * The NotificationId property in the request body will be the same in case of repeated notification.
   * This issue is possible due to limitations of underlying task management subsystem. For example, in case of a database connection issue, the notification task could fail to update it's status to 'successful' after sending the HTTP notification.
 
+## Additional considerations
+
+Test environments
+
+* It is important to avoid sending notifications to production subscribers from a test environment
+
+Database update
+
+* HTTP notifications could be send during deployment process (dbupdate),
+  for example within recompute-on-deploy for data marked with KeepSynchronized.
+  This is intended behavior: If the deployment process resulted with updating data that has active subscriptions,
+  the subscribers should be notified.
+* Depending on system configuration, and implementation specifics of Rhetos.Jobs, the notifications might be queued during deployment,
+  and send later when the application starts, or executed immediately during deployment .
+
 ## Contributing to Rhetos.HttpNotifications
 
 ### Initial development setup
