@@ -9,7 +9,7 @@ namespace Rhetos.HttpNotifications
 {
 
     /// <summary>
-    /// Event handler. Generates tasks based on subscriptions.
+    /// Event handler. Generates background tasks based on subscriptions.
     /// </summary>
     public class HttpNotificationsDispatcher
     {
@@ -45,7 +45,35 @@ namespace Rhetos.HttpNotifications
         /// </summary>
         public HashSet<string> SuppressEventTypes { get; set; }
 
-        public void NotifySubscribers(string eventType, object eventData)
+        /// <summary>
+        /// Generates background tasks for sending HTTP notifications to subscribers.
+        /// Subscribers are matched by <paramref name="eventType"/>.
+        /// The HTTP notifications will contain <paramref name="eventData"/> in request body.
+        /// </summary>
+        /// <param name="eventType">
+        /// Event type is used to select subscribers. It is included in HTTP request body.
+        /// </param>
+        /// <param name="eventData">
+        /// The data that is sent to subscribers in HTTP request body.
+        /// </param>
+        /// <param name="aggregationGroup">
+        /// Duplicate notifications within the same <paramref name="aggregationGroup"/> will be removed,
+        /// or combined into a single notification with <paramref name="jobAggregator"/>.
+        /// If set to null, the default grouping will be used, that removes duplicate notifications with same event type and data,
+		/// The value can be any type (e.g. a string or anonymous type). If a custom class is used, it should override <see cref="object.Equals(object)"/> and <see cref="object.GetHashCode"/>.
+        /// The aggregation group is automatically extended with the subscription callback URL.
+		/// See <see cref="IBackgroundJob.AddJob"/> parameters for more info.
+        /// </param>
+        /// <param name="jobAggregator">
+        /// Combines multiple notifications within the same <paramref name="aggregationGroup"/> into a single one.
+        /// If null, duplicate notifications within the group are removed, leaving only the last one.
+        /// Aggregation works in a single DI scope (unit of work).
+        /// </param>
+        public void NotifySubscribers(
+            string eventType,
+            object eventData,
+            object aggregationGroup = null,
+            JobAggregator<HttpNotificationRequest> jobAggregator = null)
         {
             if (SuppressAll || (SuppressEventTypes != null && SuppressEventTypes.Contains(eventType)))
                 return;
@@ -53,17 +81,42 @@ namespace Rhetos.HttpNotifications
             var eventSubscriptions = _subscriptions.GetSubscriptions(eventType);
             if (eventSubscriptions.Any())
             {
-                var notification = new HttpNotification { EventType = eventType, NotificationId = Guid.NewGuid(), Data = eventData };
-                var payload = _httpNotificationSender.PrepareContent(notification);
+                var payload = new HttpNotification
+                {
+                    EventType = eventType,
+                    NotificationId = Guid.NewGuid(),
+                    Data = eventData
+                };
 
                 foreach (var subscription in eventSubscriptions)
                 {
-                    // TODO: EnqueueAction is difficult to use from a plugin packages, since we need to reference Action type from the generated app that does not exist here.
-                    // TODO: Remove this after refactoring Rhetos.Jobs to support any job executer instead of DSL Actions only.
-                    var sendNotificationsJob = (ISendHttpNotification)Activator.CreateInstance(_domainObjectModel.GetType("RhetosHttpNotifications.SendHttpNotification"));
-                    sendNotificationsJob.Url = subscription.CallbackUrl;
-                    sendNotificationsJob.Payload = (string)payload;
-                    _backgroundJob.EnqueueAction(sendNotificationsJob, executeInUserContext: false, optimizeDuplicates: true);
+                    var request = new HttpNotificationRequest
+                    {
+                        Url = subscription.CallbackUrl,
+                        Payload = payload
+                    };
+
+                    // Removing duplicate notifications within a single unit of work.
+                    object requestAggregationGroup;
+                    if (aggregationGroup != null)
+                        requestAggregationGroup = new
+                        {
+                            request.Url,
+                            aggregationGroup
+                        };
+                    else
+                        requestAggregationGroup = new
+                        {
+                            request.Url,
+                            request.Payload.EventType,
+                            DataJson = JsonConvert.SerializeObject(request.Payload.Data)
+                        };
+
+                    _backgroundJob.AddJob<IHttpNotificationSender, HttpNotificationRequest>(
+                        request,
+                        false,
+                        requestAggregationGroup,
+                        jobAggregator);
                 }
             }
         }

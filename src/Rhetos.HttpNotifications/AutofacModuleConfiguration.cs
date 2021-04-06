@@ -16,9 +16,9 @@ namespace Rhetos.HttpNotifications
             builder.RegisterType<Subscriptions>().As<ISubscriptions>().InstancePerLifetimeScope();
 
             // TODO: Remove registrations of all IHttpNotificationSender after migrating to Rhetos 4.4, and use builder.GetRhetosConfiguration() to register only one selected implementation.
-            builder.RegisterType<HttpNotificationSender>().As<IHttpNotificationSender>().SingleInstance();
-            builder.RegisterType<HttpNotificationDatabaseLogger>().As<IHttpNotificationSender>().InstancePerLifetimeScope();
-            builder.RegisterType<HttpNotificationSystemLogger>().As<IHttpNotificationSender>().SingleInstance();
+            builder.RegisterType<HttpNotificationSender>().InstancePerLifetimeScope();
+            builder.RegisterType<HttpNotificationDatabaseLogger>().InstancePerLifetimeScope();
+            builder.RegisterType<HttpNotificationSystemLogger>().InstancePerLifetimeScope();
             builder.Register<IHttpNotificationSender>(HttpNotificationSenderFactory).InstancePerLifetimeScope();
 
             base.Load(builder);

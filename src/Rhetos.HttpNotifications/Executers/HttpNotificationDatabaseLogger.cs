@@ -18,22 +18,14 @@ namespace Rhetos.HttpNotifications
             _persistenceTransaction = persistenceTransaction;
         }
 
-        public object PrepareContent(HttpNotification notification)
-        {
-            // TODO: Review if this method should return HttpNotification directly, after refactoring Rhetos.Jobs to allow executer that is not a DSL action.
-            var payload = JsonConvert.SerializeObject(notification);
-            return payload;
-        }
-
-        public void Post(string url, object content)
+        public void Execute(HttpNotificationRequest job)
         {
             string sql = "INSERT INTO Common.Log (Action, Description) SELECT @p0, @p1";
-
             var command = new SqlCommand(sql, (SqlConnection)_persistenceTransaction.Connection, (SqlTransaction)_persistenceTransaction.Transaction);
             command.Parameters.AddRange(new[]
             {
                 new SqlParameter("@p0", LogActionName),
-                new SqlParameter("@p1", $"URL: {url}|Payload: {content}"), // TODO: Simplify logging as a single JSON object, after refactoring Rhetos.Jobs to allow executer that is not a DSL action.
+                new SqlParameter("@p1", JsonConvert.SerializeObject(job)),
             });
             command.ExecuteNonQuery();
         }

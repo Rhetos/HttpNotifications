@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Net.Http;
@@ -13,25 +12,12 @@ namespace Rhetos.HttpNotifications
     public class HttpNotificationSender : IHttpNotificationSender
     {
         private static readonly HttpClient _client = new HttpClient();
-        private readonly ILogProvider _logProvider;
 
-        public HttpNotificationSender(ILogProvider logProvider) // This class is registered as singleton.
+        public void Execute(HttpNotificationRequest job)
         {
-            _logProvider = logProvider;
-        }
-
-        public object PrepareContent(HttpNotification notification)
-        {
-            // TODO: Review if this method should return HttpNotification directly after refactoring Rhetos.Jobs to allow executer that is not a DSL action.
-            var payload = JsonConvert.SerializeObject(notification);
-            return payload;
-        }
-
-        public void Post(string url, object content)
-        {
-            string stringContent = (string)content;
-            var httpContent = new StringContent(stringContent, Encoding.UTF8, "application/json");
-            var response = _client.PostAsync(url, httpContent).Result;
+            string payloadJson = JsonConvert.SerializeObject(job.Payload);
+            var httpContent = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+            var response = _client.PostAsync(job.Url, httpContent).Result;
 
             if (!response.IsSuccessStatusCode)
             {
@@ -42,15 +28,15 @@ namespace Rhetos.HttpNotifications
                 }
                 catch (Exception e)
                 {
-                    responseContent = $"Error while reading HTTP response content. {e.GetType()}: {e.Message}";
+                    responseContent = $"Error while reading HTTP response content. {e}";
                 }
 
                 // TODO: Log full error, put summary in the exception.
 
                 throw new HttpRequestException(
-                    $"{GetType().Name}: HTTP POST failed with {response.StatusCode} {response.ReasonPhrase}. Callback URL: {url}" +
+                    $"{GetType().Name}: HTTP POST failed with {response.StatusCode} {response.ReasonPhrase}. Callback URL: {job.Url}" +
                     $"{Environment.NewLine}Response content: {responseContent.Limit(5000, true)}" +
-                    $"{Environment.NewLine}Request content: {stringContent.Limit(5000, true)}");
+                    $"{Environment.NewLine}Request content: {payloadJson.Limit(5000, true)}");
             }
         }
     }

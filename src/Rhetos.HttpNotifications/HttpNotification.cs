@@ -8,4 +8,10 @@ namespace Rhetos.HttpNotifications
         public Guid NotificationId { get; set; }
         public object Data { get; set; }
     }
+
+    public class HttpNotificationRequest
+    {
+        public string Url { get; set; }
+        public HttpNotification Payload { get; set; }
+    }
 }

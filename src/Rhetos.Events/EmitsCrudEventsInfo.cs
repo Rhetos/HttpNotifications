@@ -32,9 +32,9 @@ namespace Rhetos.Events
             string eventPrefix = $"{conceptInfo.Entity.Module.Name}_{conceptInfo.Entity.Name}_";
             return new IConceptInfo[]
             {
-                new EventInfo { EventName = eventPrefix + "Deleted", EventDataType = "IEnumerable<Guid>" },
-                new EventInfo { EventName = eventPrefix + "Updated", EventDataType = "IEnumerable<Guid>" },
-                new EventInfo { EventName = eventPrefix + "Inserted", EventDataType = "IEnumerable<Guid>" },
+                new EventInfo { EventName = eventPrefix + "Deleted", EventDataType = "ICollection<Guid>" },
+                new EventInfo { EventName = eventPrefix + "Updated", EventDataType = "ICollection<Guid>" },
+                new EventInfo { EventName = eventPrefix + "Inserted", EventDataType = "ICollection<Guid>" },
                 new RepositoryUsesInfo { DataStructure = conceptInfo.Entity, PropertyName = "_eventProcessing", PropertyType = "Rhetos.Events.IEventProcessing, Rhetos.Events" },
             };
         }
@@ -52,11 +52,11 @@ namespace Rhetos.Events
             string afterSaveEmitCrudEvents =
                 $@"// EmitsCrudEvents:
                 if (deletedIds.Any())
-                    _eventProcessing.EmitEvent({eventPrefix}Deleted, deletedIds.Select(item => item.ID));
+                    _eventProcessing.EmitEvent({eventPrefix}Deleted, deletedIds.Select(item => item.ID).ToList());
                 if (updatedNew.Any())
-                    _eventProcessing.EmitEvent({eventPrefix}Updated, updatedNew.Select(item => item.ID));
+                    _eventProcessing.EmitEvent({eventPrefix}Updated, updatedNew.Select(item => item.ID).ToList());
                 if (insertedNew.Any())
-                    _eventProcessing.EmitEvent({eventPrefix}Inserted, insertedNew.Select(item => item.ID));
+                    _eventProcessing.EmitEvent({eventPrefix}Inserted, insertedNew.Select(item => item.ID).ToList());
 
                 ";
 

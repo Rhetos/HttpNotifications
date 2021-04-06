@@ -83,7 +83,7 @@
     <Content Include="rhetos-build.settings.json" />
     <Content Include="rhetos-app.local.settings.json" />
     <Content Include="DslScripts\Books.rhe" />
-    <Content Include="DslScripts\Rhetos.HttpNotifications\HttpNotifications.rhe" />
+    <Content Include="DslScripts\Rhetos.HttpNotifications\*.rhe" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

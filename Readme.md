@@ -2,6 +2,9 @@
 
 Naming convention: event should be named in passive form, since it represents something that happened, for example "Bookstore_Book_Inserted".
 
+Avoid returning IEnumerable<T> and LINQ queries as an event data, in order to simplify serialization/deserialization.
+Use ICollection<T>, List<T> or an array instead.
+
 # Rhetos.HttpNotifications
 
 ## Installation and configuration
@@ -13,7 +16,6 @@ Add an implementations of Rhetos background job processing, for example *Rhetos.
 ## Features
 
 ...
-
 
 * In case there are multiple identical notifications generated within a single unit-of-work scope (single web request), only the last one of them will be sent.
 
@@ -38,6 +40,13 @@ Database update
   the subscribers should be notified.
 * Depending on system configuration, and implementation specifics of Rhetos.Jobs, the notifications might be queued during deployment,
   and send later when the application starts, or executed immediately during deployment .
+
+Debugging
+
+* If using Rhetos.Jobs.Hangfire for background processing, any failing jobs will be shown in [HangFire](https://www.hangfire.io/) tables in database, with exception details in HangFire.State table.
+* Avoid returning IEnumerable<T> and LINQ queries as an event data, in order to simplify serialization/deserialization.
+  They might result with JsonSerializationException exception from Hangfire.
+  Use ICollection<T>, List<T> or an array instead.
 
 ## Contributing to Rhetos.HttpNotifications
 

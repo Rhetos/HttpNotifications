@@ -12,21 +12,14 @@ namespace Rhetos.HttpNotifications
 
         private readonly ILogger _logger;
 
-        public HttpNotificationSystemLogger(ILogProvider logProvider) // This class is registered as singleton.
+        public HttpNotificationSystemLogger(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(LogEventName);
         }
 
-        public object PrepareContent(HttpNotification notification)
+        public void Execute(HttpNotificationRequest job)
         {
-            // TODO: Review if this method should return HttpNotification directly, after refactoring Rhetos.Jobs to allow executer that is not a DSL action.
-            var payload = JsonConvert.SerializeObject(notification);
-            return payload;
-        }
-
-        public void Post(string url, object content)
-        {
-            _logger.Info($"URL: {url}|Payload: {content}"); // TODO: Simplify logging as a single JSON object, after refactoring Rhetos.Jobs to allow executer that is not a DSL action.
+            _logger.Info(() => JsonConvert.SerializeObject(job));
         }
     }
 }
