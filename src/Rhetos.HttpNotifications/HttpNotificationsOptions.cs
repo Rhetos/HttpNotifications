@@ -1,4 +1,6 @@
-﻿namespace Rhetos.HttpNotifications
+﻿using Rhetos.Logging;
+
+namespace Rhetos.HttpNotifications
 {
     [Options("HttpNotifications")]
     public class HttpNotificationsOptions
