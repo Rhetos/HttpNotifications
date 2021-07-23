@@ -1,23 +1,54 @@
 # Rhetos.Events
 
-Naming convention: event should be named in passive form, since it represents something that happened, for example "Bookstore_Book_Inserted".
+Rhetos.Events provides an infrastructure for decoupling a feature that emits an event and a feature that processes it.
 
-Avoid returning IEnumerable<T> and LINQ queries as an event data, in order to simplify serialization/deserialization.
-Use ICollection<T>, List<T> or an array instead.
+For example, any action or a save operation might emit an event, while a generic event handler might process event subscriptions to send update notifications to some other web service.
+
+## Features
+
+* DSL concepts for declaring and emitting events:
+  * **Event** `<EventNam> <EventDataType>` -
+    Adds a new custom event type.
+    EventDataType parameter is a C# type of the event data (for example, 'ICollection\<Guid\>').
+  * **Event** `<EventNam>` -
+    Adds a new custom event type. Since event data type is not specified, the `object` class is used as default.
+  * **EmitsCrudEvents** `<Entity>` -
+    After saving changes emits events "ModuleName_EntityName_Deleted", "ModuleName_EntityName_Updated" and "ModuleName_EntityName_Inserted".
+    The event data contains IDs of the records, type "ICollection\<Guid\>".
+* Custom event emitters can be placed anywhere in the application.
+* Event handlers are implemented as plugins for Rhetos.Events, for example Rhetos.HttpNotifications.
+
+## Remarks
+
+* Naming convention: Event should be named in passive form, since it represents something that happened, for example "Bookstore_Book_Inserted".
+* Avoid returning IEnumerable\<T\> and LINQ queries as an event data, in order to simplify serialization/deserialization.
+Use ICollection\<T\>, List\<T\> or an array instead.
 
 # Rhetos.HttpNotifications
 
 ## Installation and configuration
 
-`<add key="owin:AutomaticAppStartup" value="false"/>`
-
-Add an implementations of Rhetos background job processing, for example *Rhetos.Jobs.Hangfire* NuGet package.
+Rhetos.HttpNotifications depends on Rhetos.Jobs.Abstractions to send notifications asynchronously.
+For it to work, add an implementations of Rhetos background job processing to your applications,
+for example **Rhetos.Jobs.Hangfire** NuGet package
+(see the installation [instruction](https://github.com/Rhetos/Jobs/blob/master/Readme.md)).
 
 ## Features
 
-...
-
-* In case there are multiple identical notifications generated within a single unit-of-work scope (single web request), only the last one of them will be sent.
+* Sends HTTP POST notifications to subscriber URL, as specified in entity's table *RhetosHttpNotifications.Subscription*.
+  Edit the data in the table to configure subscriptions for different event types.
+  * In case there are multiple identical notifications generated within a single unit-of-work scope (single web request), only the last one of them will be sent.
+  * Alternatively, the notifications may be sent directly without using the event processing mechanism.
+  * The notifications contain event data in POST body (for example, entity name and ID for an *update* event).
+* Guarantees:
+  * The notification will not be sent until the database transaction that created the event is committed.
+    This assures that there will be no false notifications for an operation that was not completed successfully (transaction rolled back).
+  * The notification is stored before processing, and retried if the notification POST request fails.
+    This assures that the notification will eventually be sent ("at-least once" model) or permanently
+    visible in the jobs list if the subscriber is unavailable (until explicitly removed).
+* For test environments it provides alternatives to sending HTTP requests,
+  that log the notifications instead to database log or application's log (console, e.g.).
+* See [HttpNotifications options](https://github.com/Rhetos/HttpNotifications/blob/main/src/Rhetos.HttpNotifications/HttpNotificationsOptions.cs) for configuration settings.
 
 ## Limitations
 
