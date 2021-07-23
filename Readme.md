@@ -16,7 +16,9 @@ For example, any action or a save operation might emit an event, while a generic
     After saving changes emits events "ModuleName_EntityName_Deleted", "ModuleName_EntityName_Updated" and "ModuleName_EntityName_Inserted".
     The event data contains IDs of the records, type "ICollection\<Guid\>".
 * Custom event emitters can be placed anywhere in the application.
-* Event handlers are implemented as plugins for Rhetos.Events, for example Rhetos.HttpNotifications.
+  For example see EmitEvent method calls in [Books.rhe](https://github.com/Rhetos/HttpNotifications/blob/main/test/TestApp/DslScripts/Books.rhe).
+* Event handlers are implemented as plugins for Rhetos.Events.
+  For example Rhetos.HttpNotifications sends notifications to services that are subscribed to certain event types.
 
 ## Remarks
 
