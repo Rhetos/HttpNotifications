@@ -7,23 +7,31 @@ For example, any action or a save operation might emit an event, while a generic
 ## Features
 
 * DSL concepts for declaring and emitting events:
-  * **Event** `<EventNam> <EventDataType>` -
-    Adds a new custom event type.
+  * **Event** `<EventName> <EventDataType>` -
+    Declares a new custom event type (for example, 'OrderApproved').
     EventDataType parameter is a C# type of the event data (for example, 'ICollection\<Guid\>').
-  * **Event** `<EventNam>` -
-    Adds a new custom event type. Since event data type is not specified, the `object` class is used as default.
+    The event can then be emitted by calling IEventProcessing.EmitEvent method.
+  * **Event** `<EventName>` -
+    Adds a new custom event type. The event data type is `object` by default.
   * **EmitsCrudEvents** `<Entity>` -
-    After saving changes emits events "ModuleName_EntityName_Deleted", "ModuleName_EntityName_Updated" and "ModuleName_EntityName_Inserted".
+    After saving changes emits standard CRUD events: "ModuleName_EntityName_Deleted", "ModuleName_EntityName_Updated" and "ModuleName_EntityName_Inserted".
     The event data contains IDs of the records, type "ICollection\<Guid\>".
-* Custom event emitters can be placed anywhere in the application.
-  For example see EmitEvent method calls in [Books.rhe](https://github.com/Rhetos/HttpNotifications/blob/main/test/TestApp/DslScripts/Books.rhe).
-* Event handlers are implemented as plugins for Rhetos.Events.
-  For example Rhetos.HttpNotifications sends notifications to services that are subscribed to certain event types.
+* **Custom event emitters** can be placed anywhere in the application.
+  For example see IEventProcessing.EmitEvent method calls in [Books.rhe](https://github.com/Rhetos/HttpNotifications/blob/main/test/TestApp/DslScripts/Books.rhe).
+  * Emitting an event allows various event handlers to process them (for example, HTTP notifications to an external system).
+* **Event handlers** are implemented as plugins for Rhetos.Events.
+  For example, Rhetos.HttpNotifications sends notifications to services that are subscribed to certain event types.
+  * The event handlers are executed synchronously, but they may generate asynchronous tasks or background jobs, depending on the implementation.
 
 ## Remarks
 
-* Naming convention: Event should be named in passive form, since it represents something that happened, for example "Bookstore_Book_Inserted".
-* Avoid returning IEnumerable\<T\> and LINQ queries as an event data, in order to simplify serialization/deserialization.
+* There is no need to use the event processing for a specific event that is intended for a single specific event handler.
+  The emitted events are expected to be handled by generic event handlers (for example, a handler that manages run-time event subscriptions),
+  or to allow implementation of an event handler that has no information on which component emits the event.
+* Naming convention for new events: Event should be named in passive form,
+  since it represents something that happened.
+  For example "Bookstore_Book_Inserted" is one of CRUD events created by using EmitsCrudEvents concept on entity Bookstore.Book.
+* Avoid using IEnumerable\<T\> and LINQ queries as an event data, in order to simplify serialization/deserialization.
 Use ICollection\<T\>, List\<T\> or an array instead.
 
 # Rhetos.HttpNotifications
@@ -77,9 +85,9 @@ Database update
 Debugging
 
 * If using Rhetos.Jobs.Hangfire for background processing, any failing jobs will be shown in [HangFire](https://www.hangfire.io/) tables in database, with exception details in HangFire.State table.
-* Avoid returning IEnumerable<T> and LINQ queries as an event data, in order to simplify serialization/deserialization.
+* Avoid using IEnumerable\<T\> and LINQ queries as an event data, in order to simplify serialization/deserialization.
   They might result with JsonSerializationException exception from Hangfire.
-  Use ICollection<T>, List<T> or an array instead.
+  Use ICollection\<T\>, List\<T\> or an array instead.
 
 ## Contributing to Rhetos.HttpNotifications
 
