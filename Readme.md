@@ -2,7 +2,9 @@
 
 Rhetos.Events provides an infrastructure for decoupling a feature that emits an event and a feature that processes it.
 
-For example, any action or a save operation might emit an event, while a generic event handler might process event subscriptions to send update notifications to some other web service.
+For example, any action or a save operation might emit an event, while an event handler might process event subscriptions to send notifications to some other web service or update some related records in database.
+
+The event handlers are executed **synchronously**, but they may generate asynchronous tasks or background jobs if needed, depending on the implementation.
 
 ## Features
 
@@ -21,7 +23,9 @@ For example, any action or a save operation might emit an event, while a generic
   * Emitting an event allows various event handlers to process them (for example, HTTP notifications to an external system).
 * **Event handlers** are implemented as plugins for Rhetos.Events.
   For example, Rhetos.HttpNotifications sends notifications to services that are subscribed to certain event types.
-  * The event handlers are executed synchronously, but they may generate asynchronous tasks or background jobs, depending on the implementation.
+  * The event handlers are executed synchronously.
+    If there is a need for asynchronous processing, event handler may generate
+    background tasks (with [Rhetos.Jobs](https://github.com/Rhetos/Jobs), for example).
 
 ## Remarks
 
