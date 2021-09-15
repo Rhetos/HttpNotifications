@@ -32,13 +32,13 @@ namespace Rhetos.HttpNotifications
     /// </summary>
     public class HttpNotificationsDispatcher
     {
-        private readonly IBackgroundJob _backgroundJob;
+        private readonly IBackgroundJobs _backgroundJob;
         private readonly ISubscriptions _subscriptions;
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly IHttpNotificationSender _httpNotificationSender;
 
         public HttpNotificationsDispatcher(
-            IBackgroundJob backgroundJob,
+            IBackgroundJobs backgroundJob,
             ISubscriptions subscriptions,
             HttpNotificationsOptions options,
             IDomainObjectModel domainObjectModel,
@@ -81,7 +81,7 @@ namespace Rhetos.HttpNotifications
         /// If set to null, the default grouping will be used, that removes duplicate notifications with same event type and data,
 		/// The value can be any type (e.g. a string or anonymous type). If a custom class is used, it should override <see cref="object.Equals(object)"/> and <see cref="object.GetHashCode"/>.
         /// The aggregation group is automatically extended with the subscription callback URL.
-		/// See <see cref="IBackgroundJob.AddJob"/> parameters for more info.
+		/// See <see cref="IBackgroundJobs.AddJob"/> parameters for more info.
         /// </param>
         /// <param name="jobAggregator">
         /// Combines multiple notifications within the same <paramref name="aggregationGroup"/> into a single one.
