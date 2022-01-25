@@ -14,10 +14,10 @@ The event handlers are executed **synchronously**, but they may generate asynchr
     EventDataType parameter is a C# type of the event data (for example, 'ICollection\<Guid\>').
     The event can then be emitted by calling IEventProcessing.EmitEvent method.
   * **Event** `<EventName>` -
-    Adds a new custom event type. The event data type is `object` by default.
+    Declares a new custom event type. The event data type is `object` by default.
   * **EmitsCrudEvents** `<Entity>` -
-    After saving changes emits standard CRUD events: "ModuleName_EntityName_Deleted", "ModuleName_EntityName_Updated" and "ModuleName_EntityName_Inserted".
-    The event data contains IDs of the records, type "ICollection\<Guid\>".
+    After saving changes, emits standard CRUD events: *ModuleName_EntityName_Deleted*, *ModuleName_EntityName_Updated* and *ModuleName_EntityName_Inserted*.
+    The CRUD event data contains IDs of the records, type "ICollection\<Guid\>".
 * **Custom event emitters** can be placed anywhere in the application.
   For example see IEventProcessing.EmitEvent method calls in [Books.rhe](https://github.com/Rhetos/HttpNotifications/blob/main/test/TestApp/DslScripts/Books.rhe).
   * Emitting an event allows various event handlers to process them (for example, HTTP notifications to an external system).
